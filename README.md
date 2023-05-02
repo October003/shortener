@@ -85,3 +85,23 @@ go run shortener.go
 ```bash
 Starting server at 0.0.0.0:8888....
 ```
+
+6. 修改配置结构体和配置文件
+注意: 两边一定要一致!
+
+## 参数校验
+
+1. go-zero使用validator做参数校验
+https://pkg.go.dev/github.com/go-playground/validator/v10
+
+下载依赖
+```bash
+go get github.com/go-playground/validator/v10
+```
+导入依赖
+```bash
+import github.com/go-playground/validator/v10
+```
+
+在api中为结构体添加 validate tag , 并添加校验规则
+
