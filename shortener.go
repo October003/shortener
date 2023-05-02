@@ -17,6 +17,7 @@ var configFile = flag.String("f", "etc/shortener-api.yaml", "the config file")
 func main() {
 	flag.Parse()
 
+	
 	var c config.Config
 	conf.MustLoad(*configFile, &c)
 	fmt.Printf("load conf:%#v\n", c)
@@ -27,5 +28,6 @@ func main() {
 	handler.RegisterHandlers(server, ctx)
 
 	fmt.Printf("Starting server at %s:%d...\n", c.Host, c.Port)
+
 	server.Start()
 }

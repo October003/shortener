@@ -24,5 +24,6 @@ func Get(url string) bool {
 	}
 	resp.Body.Close()
 	// 别人给我发一个跳转响应 这里也不算过
+	
 	return resp.StatusCode == http.StatusOK
 }

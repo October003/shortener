@@ -11,9 +11,7 @@ type Config struct {
 	Sequence struct {
 		DSN string
 	}
-
 }
-
 // type ShortUrlDB struct{
 // 	DSN string
 // }

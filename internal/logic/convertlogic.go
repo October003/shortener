@@ -5,6 +5,7 @@ import (
 	"database/sql"
 	"errors"
 	"fmt"
+	"shortener/pkg/base62"
 	"shortener/pkg/md5"
 	"shortener/pkg/urltool"
 
@@ -65,14 +66,22 @@ func (l *ConvertLogic) Convert(req *types.ConvertRequest) (resp *types.ConvertRe
 			return nil, errors.New("该链接已经是短链了")
 		}
 		logx.Errorw("ShortUrlModel.FindOneBySurl failed", logx.LogField{Key: "err", Value: err.Error()})
-	}	
-	// 2. 取号 转链
-
+	}
+	// 2. 取号 转链  基于MySQL实现的发号器
+	// 每来一个转链请求，我们就使用 REPLACE INTO 语句往sequence 表中插入一条数据，并且取出主键id作为号码
+	seq, err := l.svcCtx.Sequence.Next()
+	if err != nil {
+		logx.Errorw("Sequence.Next() failed", logx.LogField{Key: "err", Value: err.Error()})
+		return nil, err
+	}
+	fmt.Println(seq)
 	// 3. 号码转短链
+	// 3.1 安全性   1En = 6347
+	// 3.2 短域名避免某些特殊词
+	short := base62.Int2String(seq)
 
 	// 4. 存储长链接映射关系
 
 	// 5. 返回响应
-
 	return
 }
