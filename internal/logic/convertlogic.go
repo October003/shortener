@@ -5,6 +5,7 @@ import (
 	"database/sql"
 	"errors"
 	"fmt"
+	"shortener/model"
 	"shortener/pkg/base62"
 	"shortener/pkg/md5"
 	"shortener/pkg/urltool"
@@ -67,21 +68,42 @@ func (l *ConvertLogic) Convert(req *types.ConvertRequest) (resp *types.ConvertRe
 		}
 		logx.Errorw("ShortUrlModel.FindOneBySurl failed", logx.LogField{Key: "err", Value: err.Error()})
 	}
-	// 2. 取号 转链  基于MySQL实现的发号器
-	// 每来一个转链请求，我们就使用 REPLACE INTO 语句往sequence 表中插入一条数据，并且取出主键id作为号码
-	seq, err := l.svcCtx.Sequence.Next()
-	if err != nil {
-		logx.Errorw("Sequence.Next() failed", logx.LogField{Key: "err", Value: err.Error()})
+	var short string
+	for {
+		// 2. 取号 转链  基于MySQL实现的发号器
+		// 每来一个转链请求，我们就使用 REPLACE INTO 语句往sequence 表中插入一条数据，并且取出主键id作为号码
+		seq, err := l.svcCtx.Sequence.Next()
+		if err != nil {
+			logx.Errorw("Sequence.Next() failed", logx.LogField{Key: "err", Value: err.Error()})
+			return nil, err
+		}
+		fmt.Println(seq)
+		// 3. 号码转短链
+		// 3.1 安全性   1En = 6347
+		short = base62.Int2String(seq)
+
+		// 3.2 短域名黑名单 避免某些特殊词 例如 api , health , fuck等等
+		if _, ok := l.svcCtx.ShortUrlBlackList[short]; !ok {
+			break //生成不在黑名单里的短链接 就跳出for循环
+		}
+	}
+
+	fmt.Printf("short:%v\n", short)
+	// 4. 存储长链接映射关系
+	if _, err := l.svcCtx.ShortUrlModel.Insert(
+		l.ctx,
+		&model.ShortUrlMap{
+			Lurl: sql.NullString{String: req.LongUrl, Valid: true},
+			Md5:  sql.NullString{String: md5Value, Valid: true},
+			Surl: sql.NullString{String: short, Valid: true},
+		},
+	); err != nil {
+		logx.Errorw("ShortUrlModel.Insert() failed", logx.LogField{Key: "err", Value: err.Error()})
 		return nil, err
 	}
-	fmt.Println(seq)
-	// 3. 号码转短链
-	// 3.1 安全性   1En = 6347
-	// 3.2 短域名避免某些特殊词
-	short := base62.Int2String(seq)
-
-	// 4. 存储长链接映射关系
 
 	// 5. 返回响应
-	return
+	// 5.1 返回的是短域名 + 端链接 october.cn/1En
+	shortUrl := l.svcCtx.Config.ShortDomain  + short
+	return &types.ConvertResponse{ShortUrl: shortUrl}, nil
 }

@@ -25,9 +25,22 @@ import (
 
 // 如何实现62进制转换
 
-const base62Str = `0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ`
+// const base62Str = `0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ`
+
+// const base62Str = `J1234c67v9Ab5defghijklmnopqrstu8wxyzaBCDEFGHI0KLMNOPQRSTUVWXYZ`
 // 为了避免被人恶意请求，我们可以将上面的字符串打乱
 
+var (
+	base62Str string
+)
+
+// MustInt 要使用base62这包必须要调用该函数完成初始化
+func MustInit(bs string) {
+	if len(bs) == 0 {
+		panic("need base string!")
+	}
+	base62Str = bs
+}
 
 // Int2String 十进制数转为62进制字符串
 func Int2String(seq uint64) string {

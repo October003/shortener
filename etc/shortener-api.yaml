@@ -6,3 +6,13 @@ ShortUrlDB:
 
 Sequence:
   DSN: root:103003@tcp(127.0.0.1:3306)/gorm?charset=utf8mb4&parseTime=true&loc=Asia%2FShanghai
+
+BaseString: J1234c67v9Ab5defghijklmnopqrstu8wxyzaBCDEFGHI0KLMNOPQRSTUVWXYZ
+
+ShortUrlBlackList: ["version","fuck","stupid","convert","health","api","css","js"]
+
+ShortDoamin: october.cn/
+
+CacheRedis: 
+  - Host: 127.0.0.1:6379
+  

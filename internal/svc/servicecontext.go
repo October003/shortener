@@ -14,14 +14,21 @@ type ServiceContext struct {
 
 	Sequence sequence.Sequence // sequence
 	// Sequence *sequence.Redis
+	ShortUrlBlackList map[string]struct{}
 }
 
 func NewServiceContext(c config.Config) *ServiceContext {
 	conn := sqlx.NewMysql(c.ShortUrlDB.DSN)
+	// 把配置文件中的黑名单加载到map中， 方便后续判断
+	m := make(map[string]struct{}, len(c.ShortUrlBlackList))
+	for _, v := range c.ShortUrlBlackList {
+		m[v] = struct{}{}
+	}
 	return &ServiceContext{
 		Config:        c,
-		ShortUrlModel: model.NewShortUrlMapModel(conn),
+		ShortUrlModel: model.NewShortUrlMapModel(conn, c.CacheRedis),
 		Sequence:      sequence.NewMySQL(c.Sequence.DSN), // sequence
 		// Sequence: sequence.Newredis(redisAddr),
+		ShortUrlBlackList: m, // 短链接黑名单map
 	}
 }
